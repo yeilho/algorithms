@@ -1,3 +1,6 @@
+// refer to https://www.spoj.pl/problems/STPAR/
+// for problem description
+//
 #include <iostream>
 #include <stack>
 
