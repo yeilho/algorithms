@@ -30,6 +30,12 @@ class sparseGraph
 	int edges, vertices;
 	bool digraph;
 	bool *visited;
+	vector<int> id;
+	int count;
+	int bcnt;
+	int cnt;
+	vector<int> ord;
+	vector<int> low;
     vector<link> adj;
 	vector<int> edge_to;
 public:
@@ -45,19 +51,27 @@ public:
 	void display_path(string method);
 	void dfs();
 	void _dfs(int v, bool msg);
+	bool connected(int v, int w);
 	void connected_components();
 	void clear_visited();
 	stack<int> *pathto(int v, int s);
+	void search();
+	void searchC(int v, int w);
+	int bridge_count() const;
 };
 
 sparseGraph::sparseGraph(int v, bool digraph):
-vertices(v), digraph(digraph), edges(0), adj(v+1), edge_to(v+1)
+vertices(v), digraph(digraph), edges(0), adj(v+1), edge_to(v+1), id(v+1), bcnt(0)
 {
 	visited = new bool[v+1];
 	for (int i = 0; i < v+1; i++)
 		visited[i] = false;
 	edge_to.assign(v+1, 0);
     adj.assign(v+1, 0);
+	ord.assign(v+1, -1);
+	low.assign(v+1, -1);
+	count = 1;
+	cnt = 0;
 }
 
 int sparseGraph::v() const { return vertices; }
@@ -196,6 +210,8 @@ void sparseGraph::display_path(string method)
 void sparseGraph::_dfs(int v, bool msg)
 {
 	visited[v] = true;
+	id[v] = count;
+	//cout << "count is " << count << endl;
 	struct node *cur = adj[v];
 	if (msg) {
 		cout << v << " ";
@@ -212,36 +228,78 @@ void sparseGraph::_dfs(int v, bool msg)
 void sparseGraph::dfs()
 {
 	clear_visited();
-	_dfs(1, true);
+	for (int i = 1; i < v()+1; i++) {
+		if (!visited[i]) {
+			_dfs(i, true);
+			count++;
+		}
+	}
 	cout << endl << endl;
 }
 
 void sparseGraph::connected_components()
 {
 	int i = 1;
-	int count = 0;
 
-	while (count != this->v()) {
-		clear_visited();
-		_dfs(i, false);
+	for (int i = 1; i < count; i++) {
 		cout << "C" << i << ": ";
 		for (int j = 0; j < adj.size(); j++) {
-			if (visited[j]) {
+			if (i == id[j]) {
 				cout << j << " ";
-				count++;
 			}
 		}
-		i++;
 		cout << endl;
 	}
+}
+
+// DFS search used
+// we check pre-order number with lowest number to get to the node
+// If there is a back-edge, lowest number is lower than pre-order number
+void sparseGraph::searchC(int v, int w)
+{
+	ord[w] = cnt++;
+	low[w] = ord[w];
+
+	for (int i = 0; i < adj.size(); i++) {
+		if (ord[i] == -1) {
+			searchC(w, i);
+			if (low[w] > low[i]) low[w] = low[i];
+			if (low[i] == ord[i])
+				bcnt++;
+		} else if (i != v) {
+			if (low[w] > ord[i])
+				low[w] = ord[i];
+		}
+	}
+}
+
+void sparseGraph::search()
+{
+	clear_visited();
+	for (int i = 0; i < adj.size(); i++) {
+		if (ord[i] == -1)
+			searchC(i, i);
+	}
+}
+
+int sparseGraph::bridge_count() const
+{
+	return bcnt;
+}
+
+bool sparseGraph::connected(int v, int w)
+{
+	return id[v] == id[w];
 }
 
 void sparseGraph::clear_visited()
 {
 	for (int i = 0; i < adj.size(); i++) {
 		visited[i] = false;
+		id[i] = 0;
 	}
 }
+
 
 #endif
 
@@ -277,8 +335,15 @@ int main()
 	g->dfs();
 	g->display_path("DFS");
 
+	cout << "Connected Components:" << endl;
 	g->connected_components();
+	cout << endl;
+
+	cout << "Bridges:" << endl;
+	g->search();
+	cout << g->bridge_count() << endl;
 
     return 0;
 }
+
 #endif
