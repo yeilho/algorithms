@@ -20,9 +20,7 @@ void list_insert(node **head, int data)
 
 node *rec_reverse(node *head)
 {
-    if (head == NULL)
-        return NULL;
-    if (head->next == NULL)
+    if (head == NULL || head->next == NULL)
         return head;
 
     node *second = head->next;
@@ -51,8 +49,9 @@ node *iter_reverse(node **head)
         prev = cur;
         cur = tmp;
     }
-
-    return ;
+    
+    *head = cur;
+    return cur;
 }
 
 int main(int argc, char *argv[])
