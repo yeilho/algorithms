@@ -11,6 +11,7 @@ def union(arr, i, j):
 
 def find(arr, i):
   if arr[i] != i:
+    # path compression
     arr[i] = find(arr, arr[i])
   return arr[i]
 
