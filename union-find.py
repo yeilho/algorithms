@@ -10,10 +10,8 @@ def union(arr, i, j):
   arr[j] = i
 
 def find(arr, i):
-  if arr[i] == i:
-    return i
-  # path compression
-  arr[i] = find(arr, arr[i])
+  if arr[i] != i:
+    arr[i] = find(arr, arr[i])
   return arr[i]
 
 def number_of_connected(n, edges):
